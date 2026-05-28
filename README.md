@@ -1,127 +1,94 @@
-# Ngày 1 — Nền Tảng LLM API
+# Day 1 — LLM API Foundation
 
-## Mục Tiêu
+**AICB-P1: AI Practical Competency Program, Phase 1**
 
-Học cách gọi OpenAI API, hiểu các tham số sinh text quan trọng, so sánh GPT-4o và GPT-4o-mini, xây dựng chatbot streaming có lịch sử hội thoại.
-
----
-
-## Cài Đặt
-
-### Yêu Cầu
-- Python 3.10+
-- OpenAI API key (chỉ để chạy thủ công — kiểm thử dùng mock)
+## Cài đặt
 
 ```bash
-# Cài đặt thư viện
-pip install -r ../../requirements.txt
+# Tạo virtual environment và cài dependencies
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
 
-# Thiết lập biến môi trường
+# Thiết lập API key
 export OPENAI_API_KEY="sk-..."
 ```
 
 ---
 
-## Nhiệm Vụ
-
-### Nhiệm vụ 1: Triển khai `call_openai`
-Gọi OpenAI Chat Completions API với model GPT-4o và trả về nội dung phản hồi cùng với độ trễ đo được.
-
-**Tham số:**
-- `prompt` (str): Tin nhắn của người dùng
-- `model` (str): Model OpenAI sử dụng (mặc định: gpt-4o)
-- `temperature` (float): Kiểm soát mức độ ngẫu nhiên (0.0–2.0)
-- `max_tokens` (int): Số token tối đa được sinh ra
-
-**Trả về:** `tuple[str, float]` — (response_text, latency_seconds)
-
----
-
-### Nhiệm vụ 2: Triển khai `call_openai_mini`
-Gọi OpenAI API với model GPT-4o-mini — nhanh hơn và rẻ hơn. Gợi ý: tái sử dụng `call_openai` với `model=OPENAI_MINI_MODEL`.
-
-**Trả về:** `tuple[str, float]` — (response_text, latency_seconds)
-
----
-
-### Nhiệm vụ 3: Triển khai `compare_models`
-Gọi cả GPT-4o và GPT-4o-mini với cùng một prompt và trả về từ điển so sánh bao gồm phản hồi, độ trễ và chi phí ước tính.
-
-**Ước tính chi phí output:**
-- GPT-4o: $0.010 mỗi 1K token đầu ra
-- GPT-4o-mini: $0.0006 mỗi 1K token đầu ra
-
-**Trả về dict với các key:**
-- `gpt4o_response`, `mini_response`
-- `gpt4o_latency`, `mini_latency`
-- `gpt4o_cost_estimate`
-
----
-
-### Nhiệm vụ 4: Triển khai `streaming_chatbot`
-Xây dựng chatbot dòng lệnh tương tác dùng streaming để hiển thị token khi chúng được sinh ra. Duy trì lịch sử hội thoại 3 lượt gần nhất.
-
----
-
-## Hướng Dẫn Nộp Bài
+## Chạy kiểm thử
 
 ```bash
-# 1. Copy template.py vào folder solution và đổi tên
-cp template.py solution/solution.py
-
-# 2. Copy exercises.md vào folder solution
-cp exercises.md solution/exercises.md
-
-# 3. Zip folder solution
-zip -r solution.zip solution/
-
-# 4. Đổi tên file solution.zip thành thành <mã sinh viên>_lab_1.zip và upload lên hệ thống LMS 
+venv/bin/python -m pytest tests/ -v
 ```
 
-**Cấu trúc folder solution trước khi zip:**
-```
-solution/
-├── solution.py      # template.py đã hoàn thiện
-└── exercises.md     # bài tập và phản ánh đã điền
-```
+Tất cả 19 tests dùng mock — không cần API key thật.
 
 ---
 
-## Chạy Kiểm Thử
+## Test thủ công từng task
+
+Mở Python shell:
 
 ```bash
-pytest tests/ -v
+OPENAI_API_KEY="sk-..." venv/bin/python
 ```
 
-Tất cả kiểm thử dùng `unittest.mock` — **không cần API key thật**.
+**Task 1 — GPT-4o:**
+```python
+from solution.solution import call_openai
+text, latency = call_openai("What is 2+2?")
+print(text, latency)
+```
+
+**Task 2 — GPT-4o-mini:**
+```python
+from solution.solution import call_openai_mini
+text, latency = call_openai_mini("What is 2+2?")
+print(text, latency)
+```
+
+**Task 3 — So sánh 2 models:**
+```python
+from solution.solution import compare_models
+result = compare_models("Explain gravity in one sentence.")
+for k, v in result.items():
+    print(f"{k}: {v}")
+```
+
+**Task 4 — Streaming chatbot:**
+```python
+from solution.solution import streaming_chatbot
+streaming_chatbot()
+# Gõ câu hỏi, token hiện ra từng chữ. Gõ 'quit' để thoát.
+```
 
 ---
 
-## Chấm Điểm
+## Cấu trúc dự án
 
-| Tiêu Chí | Điểm |
-|----------|------|
-| Tất cả pytest tests pass | 50 |
-| `compare_models` trả về cấu trúc dict đúng | 10 |
-| `streaming_chatbot` duy trì lịch sử hội thoại | 10 |
-| Exercise 2.1 — Phân tích temperature | 10 |
-| Exercise 2.2 — Phân tích chi phí | 10 |
-| Exercise 2.3 — Streaming UX | 10 |
-| **Tổng** | **100** |
+```
+├── solution/
+│   ├── solution.py       # Bài làm hoàn chỉnh
+│   └── exercises.md      # Câu trả lời lý thuyết
+├── tests/
+│   └── test_solution.py  # Test suite (19 tests)
+├── template.py           # Template gốc
+├── conftest.py           # Fix Python 3.14 mock patch compatibility
+└── requirements.txt
+```
 
 ---
 
-## Hướng Dẫn Thời Gian Lab
+## Kết quả
 
-| Thời Gian | Hoạt Động |
-|-----------|-----------|
-| 0:00–1:00 | Lập trình cốt lõi: Triển khai tất cả TODO trong `template.py` |
-| 1:00–1:30 | Mở rộng: Hoàn thành Phần 2 của `exercises.md` |
+| Task | Mô tả | Kết quả |
+|------|-------|---------|
+| Task 1 | `call_openai` — gọi GPT-4o, trả về `(text, latency)` | 3/3 tests pass |
+| Task 2 | `call_openai_mini` — gọi GPT-4o-mini | 3/3 tests pass |
+| Task 3 | `compare_models` — so sánh 2 models + ước tính chi phí | 4/4 tests pass |
+| Task 4 | `streaming_chatbot` — streaming CLI, giữ 3 lượt gần nhất | 2/2 tests pass |
+| Bonus A | `retry_with_backoff` — exponential backoff | 3/3 tests pass |
+| Bonus B | `batch_compare` — xử lý nhiều prompt | 2/2 tests pass |
+| Bonus C | `format_comparison_table` — xuất bảng so sánh | 2/2 tests pass |
 
-
-
-## Danh Sách Kiểm Tra Nộp Bài
-
-- [ ] `pytest tests/ -v` — tất cả kiểm thử pass
-- [ ] `solution/exercises.md` — tất cả câu trả lời đã điền
-- [ ] `solution/solution.py` — triển khai cuối cùng của bạn
+**Tổng: 19/19 tests pass**
